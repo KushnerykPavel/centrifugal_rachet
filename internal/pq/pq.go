@@ -126,7 +126,8 @@ func ResponderHandshake(priv *ResponderKeys, initMsg InitialMessage) (*Session, 
 	}
 
 	bobSCKA := &MLKEMProvider{}
-	bobDRKP := doubleratchet.KeyPair{PrivateKey: priv.drPriv, PublicKey: priv.drPub}
+	// Alice uses bundle.SignedPreKey as bobDRPK; Bob must use the matching SPK keypair as DR keypair.
+	bobDRKP := doubleratchet.KeyPair{PrivateKey: priv.spk.PrivateKey, PublicKey: priv.spk.PublicKey}
 	tr, err := doubleratchet.InitBobTripleRatchet(result.RootKey[:], bobDRKP, bobSCKA, nil)
 	if err != nil {
 		return nil, fmt.Errorf("pq: ResponderHandshake: InitBobTripleRatchet: %w", err)
