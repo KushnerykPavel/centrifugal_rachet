@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md — MLKEMProvider full implementation
-last_updated: "2026-04-27T16:01:17.862Z"
-last_activity: 2026-04-27 -- Phase --phase execution started
+stopped_at: Completed 02-03-PLAN.md — PQXDH handshake + Triple Ratchet session facade
+last_updated: "2026-04-27T16:06:04Z"
+last_activity: 2026-04-27 — Phase 02 Plan 03 completed
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 86
+  completed_plans: 7
+  percent: 100
 ---
 
 # Project State
@@ -55,6 +55,7 @@ Progress: [█████████░] 86%
 | Phase 01 P01 | 7min | 2 tasks | 7 files |
 | Phase 02-pq-session P01 | 8min | 3 tasks | 3 files |
 | Phase 02-pq-session P02 | 6min | 2 tasks | 2 files |
+| Phase 02-pq-session P03 | 8min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - Wave 0 scaffold: all pq stubs return fmt.Errorf — safe test invocation without panic
 - Use NewEncapsulationKey768 not ParseEncapsulationKey768 — stdlib has no Parse variant
 - Encapsulate() has no error return in Go 1.25 stdlib crypto/mlkem — two-return assignment
+- [Phase 02-03]: Bob's DR keypair must be spk.PrivateKey/PublicKey so Alice's bundle.SignedPreKey matches
+- [Phase 02-03]: Session.Close() returns error (TripleRatchetSession.Close returns error, unlike doubleratchet.Session)
 
 ### Pending Todos
 
@@ -90,8 +93,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-27T16:01:17.857Z
-Stopped at: Completed 02-02-PLAN.md — MLKEMProvider full implementation
+Last session: 2026-04-27T16:06:04Z
+Stopped at: Completed 02-03-PLAN.md — PQXDH handshake + Triple Ratchet session facade
 Resume file: None
 
 **Planned Phase:** 02 (PQ Session) — 3 plans — 2026-04-27T14:55:24.213Z
