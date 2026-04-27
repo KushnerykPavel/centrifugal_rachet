@@ -12,8 +12,6 @@ import (
 // TestPQXDHHandshake is the PQ-01 acceptance test.
 // Asserts: PQXDH handshake produces identical RootKey on both sides.
 func TestPQXDHHandshake(t *testing.T) {
-	t.Skip("stub — implemented in Plan 03")
-
 	bobBundle, bobPrivate, err := pq.NewResponderBundle()
 	require.NoError(t, err)
 
@@ -80,8 +78,6 @@ func TestMLKEMProviderClose(t *testing.T) {
 // Asserts: bob.Decrypt(alice.Encrypt(plaintext)) == plaintext over a TripleRatchetSession.
 // NOTE: Alice must send first — Bob's DR ratchet is uninitialised until he receives Alice's first message.
 func TestPQSession(t *testing.T) {
-	t.Skip("stub — implemented in Plan 03")
-
 	bobBundle, bobPrivate, err := pq.NewResponderBundle()
 	require.NoError(t, err)
 
@@ -106,8 +102,6 @@ func TestPQSession(t *testing.T) {
 // Asserts: len(json.Marshal(pqMsg)) > len(json.Marshal(classicalMsg)) for the same plaintext.
 // ML-KEM-768 ciphertext (~1088 raw bytes → ~1452 base64 bytes) dominates PQ message size.
 func TestPQWireOverhead(t *testing.T) {
-	t.Skip("stub — implemented in Plan 03")
-
 	// Classical session setup
 	classicalBundle, classicalPriv, err := classical.NewResponderBundle()
 	require.NoError(t, err)
