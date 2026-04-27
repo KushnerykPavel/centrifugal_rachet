@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-01-PLAN.md — pq package scaffold
-last_updated: "2026-04-27T15:57:13.687Z"
+stopped_at: Completed 02-02-PLAN.md — MLKEMProvider full implementation
+last_updated: "2026-04-27T16:01:17.862Z"
 last_activity: 2026-04-27 -- Phase --phase execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
-  percent: 71
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -30,7 +30,7 @@ Plan: 1 of --name
 Status: Executing Phase --phase
 Last activity: 2026-04-27 -- Phase --phase execution started
 
-Progress: [███████░░░] 71%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [███████░░░] 71%
 *Updated after each plan completion*
 | Phase 01 P01 | 7min | 2 tasks | 7 files |
 | Phase 02-pq-session P01 | 8min | 3 tasks | 3 files |
+| Phase 02-pq-session P02 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Go 1.25.0 minimum (auto-bumped by go mod tidy due to go-doubleratchet requiring Go 1.25) — Toolchain enforces higher minimum
 - [Phase 01]: Created internal/deps/deps.go with blank imports for dependency tracking — go mod tidy strips unused requires; blank imports preserve them
 - Wave 0 scaffold: all pq stubs return fmt.Errorf — safe test invocation without panic
+- Use NewEncapsulationKey768 not ParseEncapsulationKey768 — stdlib has no Parse variant
+- Encapsulate() has no error return in Go 1.25 stdlib crypto/mlkem — two-return assignment
 
 ### Pending Todos
 
@@ -87,8 +90,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-27T15:57:13.682Z
-Stopped at: Completed 02-01-PLAN.md — pq package scaffold
+Last session: 2026-04-27T16:01:17.857Z
+Stopped at: Completed 02-02-PLAN.md — MLKEMProvider full implementation
 Resume file: None
 
 **Planned Phase:** 02 (PQ Session) — 3 plans — 2026-04-27T14:55:24.213Z
