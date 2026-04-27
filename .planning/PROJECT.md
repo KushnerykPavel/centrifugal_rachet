@@ -12,7 +12,10 @@ A reader clones the repo, runs `docker compose up`, and immediately sees the rea
 
 ### Validated
 
-(None yet — ship to validate)
+- PQ-01: PQXDH key agreement with ML-KEM-768 + X25519 (Validated in Phase 2)
+- PQ-02: MLKEMProvider scka.Provider with deep-copy Snapshot (Validated in Phase 2)
+- PQ-03: TripleRatchetSession Encrypt/Decrypt round-trip (Validated in Phase 2)
+- PQ-04: PQ wire size > classical wire size confirmed (Validated in Phase 2)
 
 ### Active
 
@@ -82,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after initialization*
+*Last updated: 2026-04-27 after Phase 2 completion (PQ Session)*
