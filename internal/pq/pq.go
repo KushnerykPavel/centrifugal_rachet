@@ -23,8 +23,6 @@ type ResponderKeys struct {
 	opk    pqxdh.OneTimePreKey
 	kemSPK pqxdh.KEMSignedPreKey
 	kemOPK pqxdh.KEMOneTimePreKey
-	drPriv [32]byte // Bob's DR private key
-	drPub  [32]byte // Bob's DR public key (included in PrekeyBundle)
 }
 
 // Session is the PQ encrypted-chat session facade.
@@ -60,11 +58,6 @@ func NewResponderBundle() (*pqxdh.PrekeyBundle, *ResponderKeys, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("pq: NewResponderBundle: GenerateKEMOPK: %w", err)
 	}
-	drPriv, drPub, err := doubleratchet.GenerateKeyPair()
-	if err != nil {
-		return nil, nil, fmt.Errorf("pq: NewResponderBundle: GenerateKeyPair: %w", err)
-	}
-
 	bundle := &pqxdh.PrekeyBundle{
 		IdentityKey:       ik.PublicKey,
 		SignedPreKey:      spk.PublicKey,
@@ -83,8 +76,6 @@ func NewResponderBundle() (*pqxdh.PrekeyBundle, *ResponderKeys, error) {
 		opk:    opk,
 		kemSPK: kemSPK,
 		kemOPK: kemOPK,
-		drPriv: drPriv,
-		drPub:  drPub,
 	}
 	return bundle, priv, nil
 }

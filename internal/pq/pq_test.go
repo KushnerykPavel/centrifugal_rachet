@@ -74,6 +74,54 @@ func TestMLKEMProviderClose(t *testing.T) {
 	require.NoError(t, p.Close())
 }
 
+// TestMLKEMProviderKEMProtocol verifies the two-round ML-KEM-768 shared-secret protocol (PQ-01).
+// Round 1: Alice sends encap key (1184 bytes). Bob receives it (no outputKey yet).
+// Round 2: Bob encapsulates against Alice's key, sends ciphertext (1088 bytes) back, gets outputKey.
+//
+//	Alice receives the ciphertext, decapsulates, gets the same outputKey.
+//
+// Both outputKeys must be byte-equal — this is the genuine shared KEM secret.
+func TestMLKEMProviderKEMProtocol(t *testing.T) {
+	alice := &pq.MLKEMProvider{}
+	bob := &pq.MLKEMProvider{}
+	require.NoError(t, alice.InitInitiator(make([]byte, 32)))
+	require.NoError(t, bob.InitResponder(make([]byte, 32)))
+
+	// Round 1: Alice sends her encap key (1184 bytes).
+	aliceMsg1, _, aliceOutputKey1, _, err := alice.Send()
+	require.NoError(t, err)
+	require.Equal(t, 1184, len(aliceMsg1), "Round 1 msg must be an encap key (1184 bytes)")
+	require.Nil(t, aliceOutputKey1, "Round 1: no outputKey yet — shared secret comes after ciphertext exchange")
+
+	// Bob receives the encap key — stores it, no outputKey.
+	bobRecvEpoch1, bobOutputKey1, bobKeyEpoch1, err := bob.Receive(aliceMsg1)
+	require.NoError(t, err)
+	require.Nil(t, bobOutputKey1, "Bob Round 1 receive: no outputKey yet")
+	require.Equal(t, uint32(0), bobKeyEpoch1, "Bob Round 1: keyEpoch must be 0 when no outputKey")
+	_ = bobRecvEpoch1
+
+	// Round 2: Bob encapsulates against Alice's key — emits ciphertext (1088 bytes) + outputKey.
+	bobMsg2, _, bobOutputKey2, bobKeyEpoch2, err := bob.Send()
+	require.NoError(t, err)
+	require.Equal(t, 1088, len(bobMsg2), "Round 2 msg must be a ciphertext (1088 bytes)")
+	require.NotNil(t, bobOutputKey2, "Bob Round 2: must have outputKey after encapsulating")
+	require.Equal(t, 32, len(bobOutputKey2), "outputKey must be 32 bytes")
+	require.Positive(t, bobKeyEpoch2, "Bob Round 2: keyEpoch must be > 0")
+
+	// Alice receives Bob's ciphertext and decapsulates — must recover same shared secret.
+	aliceRecvEpoch2, aliceOutputKey2, aliceKeyEpoch2, err := alice.Receive(bobMsg2)
+	require.NoError(t, err)
+	require.NotNil(t, aliceOutputKey2, "Alice Round 2 receive: must have outputKey after decapsulation")
+	require.Equal(t, 32, len(aliceOutputKey2), "outputKey must be 32 bytes")
+	_ = aliceRecvEpoch2
+
+	// THE CORE ASSERTION: both sides derived the same shared secret.
+	require.Equal(t, bobOutputKey2, aliceOutputKey2,
+		"ML-KEM shared secret must be equal on both sides — Encapsulate/Decapsulate must agree")
+	require.Equal(t, bobKeyEpoch2, aliceKeyEpoch2,
+		"keyEpoch must match between encapsulator (Bob) and decapsulator (Alice)")
+}
+
 // TestPQSession is the PQ-03 acceptance test.
 // Asserts: bob.Decrypt(alice.Encrypt(plaintext)) == plaintext over a TripleRatchetSession.
 // NOTE: Alice must send first — Bob's DR ratchet is uninitialised until he receives Alice's first message.
