@@ -586,17 +586,15 @@ The `kemRegistry.MLKEM768.encapsulate` function calls `ek.Encapsulate()` which r
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **MLKEMProvider Send/Receive epoch protocol — exact sequencing**
-   - What we know: D-06 specifies receiver generates keypair, sender encapsulates. SPQR calls `Send()` and `Receive()` once per message. `outputKey` triggers epoch advancement.
-   - What's unclear: Exactly when should `outputKey` be non-nil? On every send after having a peer encap key? Only on first encapsulation of a new keypair? The MockSCKA always returns outputKey if `m.OutputKey != nil` — it doesn't model the ML-KEM rotation protocol.
-   - Recommendation: Produce `outputKey` on every `Receive()` after processing a peer's encapsulation key (i.e., whenever we can decapsulate to get new key material). Produce non-nil `outputKey` from `Send()` only when we've newly generated a keypair. Keep epoch counters to enforce `keyEpoch == epoch+1`. An integration test (PQ-03) will validate this.
+1. **MLKEMProvider Send/Receive epoch protocol — exact sequencing** ✅ RESOLVED
+   - **Decision:** Produce `outputKey` on every `Receive()` call that successfully decapsulates a peer encapsulation key (i.e., `latestPeerEncapKey != nil` at call time → decapsulate → `outputKey = shared_secret`, `keyEpoch = epoch+1`). Produce non-nil `outputKey` from `Send()` only when a newly generated keypair is being announced for the first time (i.e., on the message where the new `latestSelfEncapKey` is first included in `SCKAHeader.Msg`). Every subsequent `Send()` using the same keypair returns `outputKey = nil`. Keep `selfEpoch` and `peerEpoch` counters; SPQR enforces `keyEpoch == epoch+1`.
+   - **Rationale:** This matches the SPQR contract: the receiver drives epoch advancement by decapsulating, the sender announces a new keypair once. An integration test (PQ-03) validates correctness.
 
-2. **`internal/pq.PrekeyBundle` vs `pqxdh.PrekeyBundle` directly**
-   - What we know: D's discretion allows using library types directly (per Claude's Discretion in CONTEXT.md).
-   - What's unclear: Phase 3 needs to JSON-serialize the bundle for Centrifugo; `pqxdh.PrekeyBundle.OneTimePreKey` is `*[32]byte` and `OPKID` is `*uint32` — these JSON-serialize as nullable objects, which is fine.
-   - Recommendation: Use `pqxdh.PrekeyBundle` directly (no wrapper). This keeps Phase 3 simpler.
+2. **`internal/pq.PrekeyBundle` vs `pqxdh.PrekeyBundle` directly** ✅ RESOLVED
+   - **Decision:** Use `pqxdh.PrekeyBundle` directly — no wrapper struct. `pqxdh.PrekeyBundle.OneTimePreKey` is `*[32]byte` and `OPKID` is `*uint32`; both JSON-serialize as nullable, which is correct for Phase 3.
+   - **Rationale:** Per Claude's Discretion in CONTEXT.md; keeps `internal/pq` thin and avoids translation layers.
 
 ---
 
