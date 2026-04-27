@@ -7,7 +7,7 @@
 
 ### Foundation
 
-- [ ] **FOUND-01**: Repository uses a single `go.mod` at the root with `cmd/` for four binaries and `internal/` for shared packages — no `go.work` committed
+- [x] **FOUND-01**: Repository uses a single `go.mod` at the root with `cmd/` for four binaries and `internal/` for shared packages — no `go.work` committed
 - [ ] **FOUND-02**: `internal/keys` provides a `toKey32([]byte) ([32]byte, error)` helper used everywhere key bytes cross the `[]byte`/`[32]byte` boundary
 - [ ] **FOUND-03**: `internal/metrics` exposes a Prometheus registry with pre-registered histograms and a `/metrics` HTTP handler reusable by all four binaries
 - [ ] **FOUND-04**: `internal/transport` wraps `centrifuge-go` client lifecycle (connect, subscribe, publish, disconnect) used by all four binaries
@@ -75,7 +75,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Pending |
 | FOUND-03 | Phase 1 | Pending |
 | FOUND-04 | Phase 1 | Pending |

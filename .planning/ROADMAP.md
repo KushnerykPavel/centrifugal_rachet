@@ -31,7 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `internal/metrics` exposes a `/metrics` endpoint serving a Prometheus registry with pre-registered histograms
   4. `internal/transport` connects, subscribes, publishes, and disconnects via `centrifuge-go` without error
   5. Unit test passes: `bob.Decrypt(alice.Encrypt(plaintext)) == plaintext` and `alice.RootKey == bob.RootKey` after X3DH handshake
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 01-01-PLAN.md — Monorepo scaffold: go.mod, go.sum, four cmd/ stub binaries
+- [ ] 01-02-PLAN.md — internal/keys (ToKey32) and internal/metrics (Prometheus registry + histograms)
+- [ ] 01-03-PLAN.md — internal/transport (centrifuge-go wrapper + integration test stub)
+- [ ] 01-04-PLAN.md — internal/classical (X3DH + DR session wrapper + CLASS-03 unit test)
 
 ### Phase 2: PQ Session
 **Goal**: A working post-quantum encrypted chat session exists using PQXDH + Triple Ratchet, verified by unit tests confirming PQ wire overhead is captured
@@ -95,7 +100,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + Classical Session | 0/? | Not started | - |
+| 1. Foundation + Classical Session | 0/4 | Not started | - |
 | 2. PQ Session | 0/? | Not started | - |
 | 3. Centrifugo Integration | 0/? | Not started | - |
 | 4. Prometheus Metrics | 0/? | Not started | - |
