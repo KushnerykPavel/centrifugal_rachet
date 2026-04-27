@@ -1,171 +1,127 @@
 ---
 phase: 02-pq-session
-reviewed: 2026-04-27T00:00:00Z
+reviewed: 2026-04-27T12:00:00Z
 depth: standard
 files_reviewed: 3
 files_reviewed_list:
-  - internal/pq/pq.go
   - internal/pq/provider.go
+  - internal/pq/pq.go
   - internal/pq/pq_test.go
 findings:
-  critical: 2
-  warning: 2
-  info: 1
-  total: 5
+  critical: 0
+  warning: 1
+  info: 2
+  total: 3
 status: issues_found
 ---
 
-# Phase 02: Code Review Report
+# Phase 02: Code Review Report (Gap-Closure)
 
-**Reviewed:** 2026-04-27
+**Reviewed:** 2026-04-27T12:00:00Z
 **Depth:** standard
 **Files Reviewed:** 3
 **Status:** issues_found
 
 ## Summary
 
-Three files implement the PQ session layer: a handshake facade (`pq.go`), an ML-KEM-768 SCKA provider (`provider.go`), and acceptance tests (`pq_test.go`). The handshake facade and tests are structurally sound. The critical problems are concentrated in `provider.go`, where the ML-KEM encapsulation protocol is architecturally broken: both peers independently call `Encapsulate()` (generating fresh, unshared randomness each time) rather than using the correct `Encapsulate()`/`Decapsulate()` pairing. The ciphertext produced by `Encapsulate()` is silently discarded with `_`, so the peer can never derive the same shared secret. This means the KEM ratchet layer produces no real shared entropy between the two sides. In addition, `pq.go` generates a DR keypair (`drPriv`/`drPub`) that is never used.
+This is a gap-closure review against the prior report, which raised CR-01 (KEM ciphertext discarded) and CR-02 (Decapsulate never called). Both critical issues are resolved in the current code. The encapsulator path in `Send()` now correctly returns the ciphertext as `msg` and the shared secret as `outputKey`; the announcer path in `Receive()` now dispatches on message length and calls `dk.Decapsulate(msg)` to recover the shared secret from the peer's ciphertext. The dead `drPriv`/`drPub` fields (WR-01) have also been removed from `ResponderKeys`.
 
----
-
-## Critical Issues
-
-### CR-01: KEM ciphertext silently discarded — peers cannot share a secret
-
-**File:** `internal/pq/provider.go:85` and `internal/pq/provider.go:112`
-
-**Issue:** `ek.Encapsulate()` returns `(sharedKey, ciphertext)`. Both `Send()` and `Receive()` discard the ciphertext with `_`. In ML-KEM, only the sender calls `Encapsulate()` — the resulting `ciphertext` must be transmitted to the holder of the matching `DecapsulationKey`, who calls `dk.Decapsulate(ciphertext)` to recover the same `sharedKey`. Without transmitting the ciphertext, both sides independently generate unrelated random shared keys. The KEM ratchet contributes no real shared entropy.
-
-The two affected lines:
-```go
-// provider.go:85
-ss, _ := ek.Encapsulate() // ciphertext DROPPED — peer can never derive ss
-
-// provider.go:112
-ss, _ := ek.Encapsulate() // same defect in Receive()
-```
-
-**Fix:** The protocol must be restructured to the standard Diffie-Hellman-style KEM flow:
-
-- **Sender side (`Send()`):** The sender already advertises their fresh encapsulation key (`dk.EncapsulationKey().Bytes()`) so the peer can encapsulate against it. The sender does NOT call `Encapsulate()` here. Instead, the sender decapsulates the ciphertext that arrives in the peer's next `SCKAHeader.Msg` (see CR-02).
-- **Receiver side (`Receive()`):** On receiving the peer's encapsulation key, call `ek.Encapsulate()` to produce `(sharedKey, ciphertext)`, return `ciphertext` in `SCKAHeader.Msg` alongside (or instead of) the raw encap key, and use `sharedKey` as `outputKey`.
-- **Decapsulation (`Send()` or a new `Recv()` path):** When the peer's encapsulated ciphertext arrives, reconstruct the decapsulation key from `p.decapSeed` and call `dk.Decapsulate(ciphertext)` to recover the matching `sharedKey`.
-
-Minimal corrected sketch for `Receive()`:
-```go
-func (p *MLKEMProvider) Receive(msg []byte) (receivingEpoch uint32, outputKey []byte, keyEpoch uint32, err error) {
-    if len(msg) == 0 {
-        return 0, nil, 0, fmt.Errorf("pq: MLKEMProvider.Receive: empty message")
-    }
-    ek, parseErr := mlkem.NewEncapsulationKey768(msg)
-    if parseErr != nil {
-        return 0, nil, 0, fmt.Errorf("pq: MLKEMProvider.Receive: NewEncapsulationKey768: %w", parseErr)
-    }
-    sharedKey, ciphertext := ek.Encapsulate()
-    // ciphertext must be returned and transmitted back to the sender
-    // so they can call dk.Decapsulate(ciphertext) to recover sharedKey.
-    p.pendingCiphertext = ciphertext   // new field, sent in next SCKAHeader.Msg
-    outputKey = sharedKey[:32]
-    receivingEpoch = p.recvEpoch
-    p.recvEpoch++
-    keyEpoch = p.recvEpoch
-    return receivingEpoch, outputKey, keyEpoch, nil
-}
-```
-
-### CR-02: `decapSeed` stored but decapsulation (`dk.Decapsulate`) is never called
-
-**File:** `internal/pq/provider.go:66-70`
-
-**Issue:** `NewDecapsulationKey768(newSeed[:])` is called in `Send()` solely to derive and broadcast the encapsulation key bytes. The `decapSeed` is saved to `p.decapSeed`, presumably so that the decapsulation key can be reconstructed later. However, nowhere in the codebase is `mlkem.NewDecapsulationKey768(p.decapSeed[:])` followed by `dk.Decapsulate(ciphertext)` ever called. The `decapSeed` persists across `Snapshot()`/`Restore()` cycles but is permanently unused — the decapsulation half of the KEM is dead code.
-
-```go
-// Send() — dk is only used for EncapsulationKey().Bytes(), then discarded:
-dk, err := mlkem.NewDecapsulationKey768(newSeed[:])
-// ...
-msg = dk.EncapsulationKey().Bytes()
-// p.decapSeed = newSeed  ← stored but never used for Decapsulate()
-```
-
-**Fix:** Add decapsulation in `Send()` (or a dedicated path) when the peer's ciphertext is available. Once CR-01 is fixed and `Receive()` transmits a ciphertext back, `Send()` should:
-```go
-// Reconstruct our current decapsulation key and decapsulate the peer's ciphertext.
-if p.pendingPeerCiphertext != nil {
-    dk, err := mlkem.NewDecapsulationKey768(p.decapSeed[:])
-    if err != nil { ... }
-    sharedKey, err := dk.Decapsulate(p.pendingPeerCiphertext)
-    if err != nil { ... }
-    outputKey = sharedKey[:32]
-    p.pendingPeerCiphertext = nil
-}
-```
+Two info-level items from the prior report remain open (WR-02 and IN-01, now downgraded to Info given no correctness impact), and one new Warning is raised for dead struct state (`pendingPeerCiphertext`).
 
 ---
 
 ## Warnings
 
-### WR-01: Dead key material — `drPriv`/`drPub` generated but never used
+### WR-01: `pendingPeerCiphertext` field is dead state — stored, snapshotted, zeroed, never written
 
-**File:** `internal/pq/pq.go:26-27`, `63-66`, `86-87`
+**File:** `internal/pq/provider.go:34`
 
-**Issue:** `NewResponderBundle()` generates a dedicated DR keypair (`drPriv`, `drPub`) via `doubleratchet.GenerateKeyPair()` and stores it in `ResponderKeys`. The comment on line 27 says "Bob's DR public key (included in PrekeyBundle)", but neither field is placed in `PrekeyBundle` nor read in `ResponderHandshake()`. Instead, `ResponderHandshake()` reuses `priv.spk` (the PQXDH SignedPreKey) directly as the DR keypair (line 130). The generated `drPriv`/`drPub` material is wasted entropy and the comment is misleading.
+**Issue:** `pendingPeerCiphertext []byte` is declared in both `MLKEMProvider` and `mlkemProviderSnapshot`, deep-copied in `Snapshot()` (line 162), reinstated in `Restore()` (line 176), and zeroed in `Close()` (lines 192-194). However it is never written anywhere in the current code. The two-round protocol now routes the ciphertext through the `msg` return value of `Send()`, so the field has no purpose. Carrying dead key-material-shaped state through the snapshot/restore lifecycle is misleading and inflates the attack surface of `Close()` (a reviewer must check whether it could hold live secrets).
 
-**Fix:** Either remove the `drPriv`/`drPub` fields and the `GenerateKeyPair()` call, or use them as intended by placing `drPub` in the `PrekeyBundle` and using `drPriv`/`drPub` in `ResponderHandshake()` instead of reusing `spk`:
+**Fix:** Remove `pendingPeerCiphertext` from `MLKEMProvider`, `mlkemProviderSnapshot`, `Snapshot()`, `Restore()`, and `Close()`:
 ```go
-// Option A — remove dead fields:
-// Delete drPriv, drPub from ResponderKeys; delete GenerateKeyPair() call.
+// Delete from MLKEMProvider struct:
+// pendingPeerCiphertext []byte   ← remove
 
-// Option B — use them:
-bundle.DRPublicKey = priv.drPub  // add to PrekeyBundle if schema supports it
-// In ResponderHandshake:
-bobDRKP := doubleratchet.KeyPair{PrivateKey: priv.drPriv, PublicKey: priv.drPub}
-```
+// Delete from mlkemProviderSnapshot:
+// pendingPeerCiphertext []byte   ← remove
 
-### WR-02: `InitInitiator` and `InitResponder` silently ignore the `sk` parameter
+// Delete from Snapshot():
+// if p.pendingPeerCiphertext != nil {
+//     snap.pendingPeerCiphertext = append([]byte(nil), p.pendingPeerCiphertext...)
+// }
 
-**File:** `internal/pq/provider.go:32-52`
+// Delete from Restore():
+// p.pendingPeerCiphertext = snap.pendingPeerCiphertext
 
-**Issue:** Both `InitInitiator(sk []byte)` and `InitResponder(sk []byte)` accept a session-key seed parameter but never use it — the `sk` argument is ignored. Both methods overwrite `p.decapSeed` with fresh random bytes regardless of `sk`. If the caller expects the provider to derive its initial KEM keypair deterministically from `sk` (e.g., for test reproducibility or session binding), this is silently wrong. The test passes `make([]byte, 32)` (all-zeros) but the provider still generates a random seed.
-
-**Fix:** If `sk` is intentionally unused (pure ephemeral KEM), rename or remove the parameter to avoid confusion:
-```go
-func (p *MLKEMProvider) InitInitiator(_ []byte) error {
-```
-If `sk` is meant to seed the initial decapsulation key deterministically, use it:
-```go
-func (p *MLKEMProvider) InitInitiator(sk []byte) error {
-    if len(sk) < 64 {
-        return fmt.Errorf("pq: MLKEMProvider.InitInitiator: sk must be 64 bytes, got %d", len(sk))
-    }
-    copy(p.decapSeed[:], sk[:64])
-    // ...
-}
+// Delete from Close():
+// for i := range p.pendingPeerCiphertext { p.pendingPeerCiphertext[i] = 0 }
+// p.pendingPeerCiphertext = nil
 ```
 
 ---
 
 ## Info
 
-### IN-01: `Restore()` silently no-ops on type mismatch
+### IN-01: `InitInitiator` and `InitResponder` silently ignore the `sk` parameter
 
-**File:** `internal/pq/provider.go:138-148`
+**File:** `internal/pq/provider.go:42`, `internal/pq/provider.go:54`
 
-**Issue:** If `snapshot` is not `*mlkemProviderSnapshot`, `Restore()` returns without error and leaves provider state unchanged. This makes misuse invisible to callers — a wrong-type snapshot silently fails to restore state, which could cause the SPQR rollback (D-07) to proceed with corrupted state.
+**Issue:** Both `InitInitiator(sk []byte)` and `InitResponder(sk []byte)` accept a session-key seed parameter but never read it — `p.decapSeed` is always overwritten with fresh random bytes from `rand.Read`. The `sk` argument is silently discarded. Callers that expect deterministic seeding will be surprised, and static analysis tools will flag the unused parameter.
 
-**Fix:** Return an error (requires changing the method signature to match the interface) or at minimum panic with a descriptive message to surface misuse during development:
+**Fix:** If `sk` is intentionally unused (pure ephemeral KEM), use a blank identifier to document the intent:
+```go
+func (p *MLKEMProvider) InitInitiator(_ []byte) error {
+```
+If `sk` is intended to seed the initial decapsulation key deterministically:
+```go
+func (p *MLKEMProvider) InitInitiator(sk []byte) error {
+    if len(sk) < 64 {
+        return fmt.Errorf("pq: MLKEMProvider.InitInitiator: sk must be at least 64 bytes, got %d", len(sk))
+    }
+    copy(p.decapSeed[:], sk[:64])
+    p.sendEpoch = 0
+    p.recvEpoch = 0
+    p.initialized = true
+    return nil
+}
+```
+
+### IN-02: `Restore()` silently no-ops on type mismatch
+
+**File:** `internal/pq/provider.go:169-172`
+
+**Issue:** If `snapshot` is not `*mlkemProviderSnapshot`, `Restore()` returns without modifying provider state and without signalling an error. A wrong-type snapshot passed during a D-07 rollback will silently fail to restore state, leaving the provider in a post-failure state while the caller believes it has been rolled back.
+
+**Fix:** Panic with a descriptive message to surface the logic error during development (the method signature cannot return an error without changing the interface):
 ```go
 func (p *MLKEMProvider) Restore(snapshot any) {
     snap, ok := snapshot.(*mlkemProviderSnapshot)
     if !ok {
         panic(fmt.Sprintf("pq: MLKEMProvider.Restore: unexpected snapshot type %T", snapshot))
     }
-    // ...
+    // ... rest unchanged
 }
 ```
-If the interface requires `Restore(any)` with no return value, the panic approach is appropriate for a logic-error guard.
 
 ---
 
-_Reviewed: 2026-04-27_
+## Prior Critical Issues — Verified Fixed
+
+### CR-01 (resolved): KEM ciphertext is now transmitted
+
+The prior report found `ek.Encapsulate()` results discarded with `_` in both `Send()` and `Receive()`. In the current code, `Send()` (encapsulator path, line 87) captures `ss, ct := ek.Encapsulate()` and returns `ct` as `msg` (line 91). The ciphertext is now transmitted to the peer.
+
+### CR-02 (resolved): Decapsulate is now called
+
+The prior report found `Decapsulate` was never called anywhere. In the current code, `Receive()` dispatches on `len(msg) == mlkem768CiphertextSize` (line 127) and calls `dk.Decapsulate(msg)` (line 133) to recover the shared secret from the peer's ciphertext.
+
+### WR-01 (resolved): Dead `drPriv`/`drPub` fields removed
+
+The prior report found `drPriv`/`drPub` generated in `NewResponderBundle()` but never used. These fields are absent from the current `ResponderKeys` struct.
+
+---
+
+_Reviewed: 2026-04-27T12:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
