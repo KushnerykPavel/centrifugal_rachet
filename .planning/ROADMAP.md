@@ -49,9 +49,9 @@ Plans:
   4. Unit test confirms `len(serialized TripleRatchetMessage) > len(serialized *Message)` for identical plaintext, proving PQ overhead is captured
 **Plans**: 4 plans
 Plans:
-- [ ] 02-01-PLAN.md — MLKEMProvider (scka.Provider), Snapshot/Restore, Close
-- [ ] 02-02-PLAN.md — PQXDH handshake facade (NewResponderBundle, InitiatorHandshake, ResponderHandshake)
-- [ ] 02-03-PLAN.md — Session Encrypt/Decrypt, PQ-01/PQ-03/PQ-04 acceptance tests
+- [x] 02-01-PLAN.md — MLKEMProvider (scka.Provider), Snapshot/Restore, Close
+- [x] 02-02-PLAN.md — PQXDH handshake facade (NewResponderBundle, InitiatorHandshake, ResponderHandshake)
+- [x] 02-03-PLAN.md — Session Encrypt/Decrypt, PQ-01/PQ-03/PQ-04 acceptance tests
 - [x] 02-04-PLAN.md — Gap closure: correct two-round ML-KEM-768 protocol (Decapsulate), remove drPriv/drPub, add KEM equality test
 
 ### Phase 3: Centrifugo Integration
