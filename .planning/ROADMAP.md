@@ -47,7 +47,12 @@ Plans:
   2. `MLKEMProvider.Snapshot()` performs a deep copy — mutating the original does not affect the snapshot
   3. Unit test passes: `bob.Decrypt(alice.Encrypt(plaintext)) == plaintext` over a `TripleRatchetSession`
   4. Unit test confirms `len(serialized TripleRatchetMessage) > len(serialized *Message)` for identical plaintext, proving PQ overhead is captured
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — MLKEMProvider (scka.Provider), Snapshot/Restore, Close
+- [ ] 02-02-PLAN.md — PQXDH handshake facade (NewResponderBundle, InitiatorHandshake, ResponderHandshake)
+- [ ] 02-03-PLAN.md — Session Encrypt/Decrypt, PQ-01/PQ-03/PQ-04 acceptance tests
+- [x] 02-04-PLAN.md — Gap closure: correct two-round ML-KEM-768 protocol (Decapsulate), remove drPriv/drPub, add KEM equality test
 
 ### Phase 3: Centrifugo Integration
 **Goal**: Both classical and PQ Alice-Bob pairs exchange encrypted messages over live Centrifugo channels using in-band key exchange, with no goroutine deadlocks
@@ -101,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation + Classical Session | 4/4 | Complete | 2026-04-27 |
-| 2. PQ Session | 3/3 | Complete | 2026-04-27 |
+| 2. PQ Session | 4/4 | Complete | 2026-04-27 |
 | 3. Centrifugo Integration | 0/? | Not started | - |
 | 4. Prometheus Metrics | 0/? | Not started | - |
 | 5. Docker Compose + Grafana | 0/? | Not started | - |

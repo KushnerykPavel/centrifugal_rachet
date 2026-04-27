@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-03-PLAN.md — PQXDH handshake + Triple Ratchet session facade
-last_updated: "2026-04-27T16:25:14.573Z"
-last_activity: 2026-04-27 -- Phase --phase execution started
+stopped_at: Completed 02-04-PLAN.md — MLKEMProvider KEM protocol fix (gap closure)
+last_updated: "2026-04-27T10:27:00Z"
+last_activity: 2026-04-27 — Phase 02-pq-session plan 04 complete
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -56,6 +56,7 @@ Progress: [█████████░] 86%
 | Phase 02-pq-session P01 | 8min | 3 tasks | 3 files |
 | Phase 02-pq-session P02 | 6min | 2 tasks | 2 files |
 | Phase 02-pq-session P03 | 8min | 3 tasks | 2 files |
+| Phase 02-pq-session P04 | 12min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - Encapsulate() has no error return in Go 1.25 stdlib crypto/mlkem — two-return assignment
 - [Phase 02-03]: Bob's DR keypair must be spk.PrivateKey/PublicKey so Alice's bundle.SignedPreKey matches
 - [Phase 02-03]: Session.Close() returns error (TripleRatchetSession.Close returns error, unlike doubleratchet.Session)
+- [Phase 02-04]: KEM protocol dispatch by message length (1184 vs 1088) — no flags or extra state; ciphertext is the entire msg in Round 2
 
 ### Pending Todos
 
@@ -93,8 +95,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-27T16:06:04Z
-Stopped at: Completed 02-03-PLAN.md — PQXDH handshake + Triple Ratchet session facade
+Last session: 2026-04-27T10:27:00Z
+Stopped at: Completed 02-04-PLAN.md — MLKEMProvider KEM protocol fix (gap closure)
 Resume file: None
 
 **Planned Phase:** 02 (PQ Session) — 4 plans — 2026-04-27T16:25:14.564Z
