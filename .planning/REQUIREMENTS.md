@@ -20,10 +20,14 @@
 
 ### PQ Protocol
 
-- [ ] **PQ-01**: `internal/pq` implements PQXDH key agreement combining ML-KEM-768 (`crypto/mlkem`) encapsulation with an X25519 DH, joined via `hkdf.New` over the concatenation `SS_mlkem || SS_x25519` — matching the Signal PQXDH spec KDF input order
-- [ ] **PQ-02**: `internal/pq` provides a `MLKEMProvider` struct implementing `scka.Provider` from `go-doubleratchet v0.0.2`, wrapping `crypto/mlkem`; `Snapshot()` performs a deep copy of all key material
-- [ ] **PQ-03**: `internal/pq` initialises a `go-doubleratchet v0.0.2` `TripleRatchetSession` from the PQXDH `RootKey` + `PQRKey` outputs and exposes `Encrypt(plaintext []byte) (*TripleRatchetMessage, error)` and `Decrypt(msg *TripleRatchetMessage) ([]byte, error)`
-- [ ] **PQ-04**: Unit test confirms `bob.Decrypt(alice.Encrypt(plaintext)) == plaintext` and that `len(serialized TripleRatchetMessage) > len(serialized *Message)` for the same plaintext
+- [x] **PQ-01
+**: `internal/pq` implements PQXDH key agreement combining ML-KEM-768 (`crypto/mlkem`) encapsulation with an X25519 DH, joined via `hkdf.New` over the concatenation `SS_mlkem || SS_x25519` — matching the Signal PQXDH spec KDF input order
+- [x] **PQ-02
+**: `internal/pq` provides a `MLKEMProvider` struct implementing `scka.Provider` from `go-doubleratchet v0.0.2`, wrapping `crypto/mlkem`; `Snapshot()` performs a deep copy of all key material
+- [x] **PQ-03
+**: `internal/pq` initialises a `go-doubleratchet v0.0.2` `TripleRatchetSession` from the PQXDH `RootKey` + `PQRKey` outputs and exposes `Encrypt(plaintext []byte) (*TripleRatchetMessage, error)` and `Decrypt(msg *TripleRatchetMessage) ([]byte, error)`
+- [x] **PQ-04
+**: Unit test confirms `bob.Decrypt(alice.Encrypt(plaintext)) == plaintext` and that `len(serialized TripleRatchetMessage) > len(serialized *Message)` for the same plaintext
 
 ### Centrifugo Integration
 

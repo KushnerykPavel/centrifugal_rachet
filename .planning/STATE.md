@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-04-27T14:55:24.222Z"
+stopped_at: Completed 02-01-PLAN.md — pq package scaffold
+last_updated: "2026-04-27T15:57:13.687Z"
 last_activity: 2026-04-27 -- Phase --phase execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
-  percent: 57
+  completed_plans: 5
+  percent: 71
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-27)
 
 **Core value:** A reader clones the repo, runs `docker compose up`, and immediately sees the real wire-size and latency difference between classical and post-quantum ratchet protocols in a working chat.
-**Current focus:** Phase --phase — 01
+**Current focus:** Phase --phase — 02
 
 ## Current Position
 
-Phase: --phase (01) — EXECUTING
+Phase: --phase (02) — EXECUTING
 Plan: 1 of --name
 Status: Executing Phase --phase
 Last activity: 2026-04-27 -- Phase --phase execution started
 
-Progress: [███░░░░░░░] 25%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [███░░░░░░░] 25%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 7min | 2 tasks | 7 files |
+| Phase 02-pq-session P01 | 8min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ Recent decisions affecting current work:
 - Init: Prometheus labels (protocol, role) attached at scrape level, not emitted by binaries
 - [Phase 01]: Go 1.25.0 minimum (auto-bumped by go mod tidy due to go-doubleratchet requiring Go 1.25) — Toolchain enforces higher minimum
 - [Phase 01]: Created internal/deps/deps.go with blank imports for dependency tracking — go mod tidy strips unused requires; blank imports preserve them
+- Wave 0 scaffold: all pq stubs return fmt.Errorf — safe test invocation without panic
 
 ### Pending Todos
 
@@ -85,8 +87,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 2 context gathered
-Resume file: --resume-file
+Last session: 2026-04-27T15:57:13.682Z
+Stopped at: Completed 02-01-PLAN.md — pq package scaffold
+Resume file: None
 
 **Planned Phase:** 02 (PQ Session) — 3 plans — 2026-04-27T14:55:24.213Z
