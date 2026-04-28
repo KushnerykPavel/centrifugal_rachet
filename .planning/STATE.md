@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Phase 06 Plan 01 complete
-last_updated: "2026-04-28T13:10:00Z"
-last_activity: 2026-04-28 -- Phase 06 Plan 01 README.md completed
+stopped_at: Phase 06 Plan 02 complete
+last_updated: "2026-04-28T13:11:00Z"
+last_activity: 2026-04-28 -- Phase 06 Plan 02 blog-draft.md completed
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 19
-  percent: 90
+  completed_plans: 20
+  percent: 95
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 ## Current Position
 
 Phase: 06 (readme-blog-content) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase 06 — Plan 01 complete
-Last activity: 2026-04-28 -- Phase 06 Plan 01 README.md completed
+Plan: 3 of 3
+Status: Executing Phase 06 — Plan 02 complete
+Last activity: 2026-04-28 -- Phase 06 Plan 02 blog-draft.md completed
 
 Progress: [██████████] 100%
 
@@ -71,6 +71,7 @@ Progress: [██████████] 100%
 | Phase 05-docker-compose-+-grafana P03 | 1min | 2 tasks | 3 files |
 | Phase 05-docker-compose-+-grafana P04 | 3min | 3 tasks | 6 files |
 | Phase 06-readme-blog-content P01 | 102s | 1 tasks | 1 files |
+| Phase 06-readme-blog-content P02 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 05-04]: Stat panels query ratchet_message_wire_bytes_sum/count (not handshake latency) — closes OBS-05 blocker
 - [Phase 05-04]: Dockerfile base image golang:1.24-alpine (1.25-alpine does not exist on Docker Hub) — closes CR-01
 - [Phase 05-04]: Grafana anonymous role Viewer not Admin — closes CR-02 / T-05-04-01
+- [Phase 06-02]: blog-draft.md MLKEMProvider shown as sidebar note only — primary PQXDH snippet demonstrates API parity with X3DH
+- [Phase 06-02]: Comparison table byte numbers marked as measured from live run, not stated as design estimates
+- [Phase 06-02]: pq.Session.Close() returns error; classical.Session.Close() returns nothing — documented as known API asymmetry
 
 ### Pending Todos
 
@@ -122,8 +126,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-28T13:10:00Z
-Stopped at: Phase 06 Plan 01 complete — README.md committed (f22a560)
+Last session: 2026-04-28T13:11:00Z
+Stopped at: Phase 06 Plan 02 complete — blog-draft.md committed (906d087)
 Resume file: None
 
 **Planned Phase:** 06 (readme-blog-content) — 3 plans — 2026-04-28T12:55:15.103Z

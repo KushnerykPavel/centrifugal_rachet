@@ -112,7 +112,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 06-01-PLAN.md — README.md quick-start, comparison table, ASCII diagrams
-- [ ] 06-02-PLAN.md — Blog content and code pointers
+- [x] 06-02-PLAN.md — Blog content and code pointers
 - [ ] 06-03-PLAN.md — Final verification pass
 
 ## Progress
@@ -127,4 +127,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Centrifugo Integration | 3/3 | Complete | 2026-04-28 |
 | 4. Prometheus Metrics | 3/3 | Complete | 2026-04-28 |
 | 5. Docker Compose + Grafana | 4/4 | Complete | 2026-04-28 |
-| 6. README + Blog Content | 1/3 | In progress | - |
+| 6. README + Blog Content | 2/3 | In progress | - |
