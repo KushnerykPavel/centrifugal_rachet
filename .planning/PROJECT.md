@@ -16,6 +16,9 @@ A reader clones the repo, runs `docker compose up`, and immediately sees the rea
 - PQ-02: MLKEMProvider scka.Provider with deep-copy Snapshot (Validated in Phase 2)
 - PQ-03: TripleRatchetSession Encrypt/Decrypt round-trip (Validated in Phase 2)
 - PQ-04: PQ wire size > classical wire size confirmed (Validated in Phase 2)
+- CENT-02: JSON envelope with Type+Payload dispatch (Validated in Phase 3)
+- CENT-04: OnPublication go func() dispatch — no cbQueue deadlock (Validated in Phase 3)
+- CENT-05: ch-classical and ch-pq channel isolation (Validated in Phase 3)
 
 ### Active
 
