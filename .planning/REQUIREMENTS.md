@@ -35,8 +35,10 @@
 **: Centrifugo config enables `client.insecure: true` and `health: true`; channels `ch-classical` and `ch-pq` require no token
 - [x] **CENT-02
 **: All four binaries use a message envelope struct with a `Type` field (`prekey_bundle | initial_msg | ratchet_msg`) on JSON publications to Centrifugo channels
-- [ ] **CENT-03**: Bob roles publish their prekey bundle as the first unencrypted JSON message on startup; Alice roles retry subscription up to 30 s waiting for the bundle before performing the handshake
-- [ ] **CENT-04**: All `OnPublication` callbacks dispatch to `go func()` — no blocking calls inside the handler
+- [x] **CENT-03
+**: Bob roles publish their prekey bundle as the first unencrypted JSON message on startup; Alice roles retry subscription up to 30 s waiting for the bundle before performing the handshake
+- [x] **CENT-04
+**: All `OnPublication` callbacks dispatch to `go func()` — no blocking calls inside the handler
 - [x] **CENT-05
 **: Classical pair uses `ch-classical` exclusively; PQ pair uses `ch-pq` exclusively — no shared channel state
 

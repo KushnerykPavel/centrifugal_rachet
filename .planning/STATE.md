@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-04-28T06:16:03.403Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-04-28T06:20:21.961Z"
 last_activity: 2026-04-28 -- Phase --phase execution started
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 11
-  completed_plans: 9
-  percent: 82
+  completed_plans: 10
+  percent: 91
 ---
 
 # Project State
@@ -30,7 +30,7 @@ Plan: 1 of --name
 Status: Executing Phase --phase
 Last activity: 2026-04-28 -- Phase --phase execution started
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 82%
 | Phase 02-pq-session P03 | 8min | 3 tasks | 2 files |
 | Phase 02-pq-session P04 | 12min | 2 tasks | 3 files |
 | Phase 03-centrifugo-integration P01 | 2min | 3 tasks | 3 files |
+| Phase 03-centrifugo-integration P02 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Recent decisions affecting current work:
 - [Phase 02-03]: Session.Close() returns error (TripleRatchetSession.Close returns error, unlike doubleratchet.Session)
 - [Phase 02-04]: KEM protocol dispatch by message length (1184 vs 1088) — no flags or extra state; ciphertext is the entire msg in Round 2
 - Envelope.Payload is json.RawMessage — defers inner-type parsing to receiver
+- Import centrifuge-go directly in binaries for var sub *centrifuge.Subscription declaration before Subscribe closure — required for safe sub capture by reference (RESEARCH.md Open Question 2)
 
 ### Pending Todos
 
@@ -97,8 +99,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-28T06:16:03.397Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-04-28T06:20:21.955Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
 
 **Planned Phase:** 03 (Centrifugo Integration) — 3 plans — 2026-04-28T05:19:04.321Z
