@@ -13,13 +13,13 @@
       "datasource": { "type": "prometheus", "uid": "-- Default --" },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "bytes",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "yellow", "value": 0.01 },
-              { "color": "red", "value": 0.1 }
+              { "color": "yellow", "value": 500 },
+              { "color": "red", "value": 2000 }
             ]
           }
         },
@@ -42,25 +42,25 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "-- Default --" },
-          "expr": "rate(ratchet_handshake_duration_seconds_sum{job=~\"alice-classical|bob-classical\"}[1m]) / rate(ratchet_handshake_duration_seconds_count{job=~\"alice-classical|bob-classical\"}[1m])",
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=~\"alice-classical|bob-classical\"}[1m]) / rate(ratchet_message_wire_bytes_count{job=~\"alice-classical|bob-classical\"}[1m])",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
       ],
-      "title": "Classical Handshake",
+      "title": "Classical Wire Size (avg bytes)",
       "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "-- Default --" },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "bytes",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "yellow", "value": 0.01 },
-              { "color": "red", "value": 0.1 }
+              { "color": "yellow", "value": 500 },
+              { "color": "red", "value": 2000 }
             ]
           }
         },
@@ -83,12 +83,12 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "-- Default --" },
-          "expr": "rate(ratchet_handshake_duration_seconds_sum{job=~\"alice-pq|bob-pq\"}[1m]) / rate(ratchet_handshake_duration_seconds_count{job=~\"alice-pq|bob-pq\"}[1m])",
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=~\"alice-pq|bob-pq\"}[1m]) / rate(ratchet_message_wire_bytes_count{job=~\"alice-pq|bob-pq\"}[1m])",
           "legendFormat": "{{job}}",
           "refId": "A"
         }
       ],
-      "title": "PQ Handshake",
+      "title": "PQ Wire Size (avg bytes)",
       "type": "stat"
     },
     {
