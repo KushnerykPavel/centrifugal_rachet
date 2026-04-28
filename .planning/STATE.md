@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.0.2
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-28T07:22:16.739Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-28T07:25:54.123Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
-  percent: 86
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State
@@ -30,7 +30,7 @@ Plan: Not started
 Status: Ready to plan
 Last activity: 2026-04-28
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [█████████░] 86%
 | Phase 03-centrifugo-integration P02 | 8min | 2 tasks | 2 files |
 | Phase 03-centrifugo-integration P03 | 4min | 2 tasks | 2 files |
 | Phase 04-prometheus-metrics P01 | 91 | 3 tasks | 2 files |
+| Phase 04-prometheus-metrics P02 | 116 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - Applied var-sub-before-Subscribe pattern from 03-02 to PQ binaries — pqxdh.PrekeyBundle as unmarshal target for alice-pq (Pitfall 6)
 - HandshakeDurationSeconds timer starts before InitiatorHandshake (alice) and at TypeInitialMsg arrival (bob) to capture full handshake including unmarshaling
 - sess nil-check uses mutex-guarded read pattern to prevent data race on nil check itself
+- HandshakeDurationSeconds timer starts before InitiatorHandshake in alice-pq and at TypeInitialMsg arrival (before unmarshal) in bob-pq — captures full responder processing time
+- sess nil-check uses mutex-guarded read pattern in PQ pair binaries to prevent data race on nil check itself
 
 ### Pending Todos
 
@@ -105,8 +108,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-28T07:22:16.724Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-28T07:25:54.117Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
 
 **Planned Phase:** 04 (Prometheus Metrics) — 3 plans — 2026-04-28T07:18:59.001Z
