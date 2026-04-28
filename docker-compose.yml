@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  centrifugo:
+    image: centrifugo/centrifugo:latest
+    command: centrifugo --config /centrifugo/config.json
+    volumes:
+      - ./centrifugo:/centrifugo
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+  bob-classical:
+    build:
+      context: .
+      dockerfile: cmd/bob-classical/Dockerfile
+    environment:
+      - CENTRIFUGO_URL=ws://centrifugo:8000/connection/websocket
+      - METRICS_PORT=9092
+    ports:
+      - "9092:9092"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+    restart: on-failure
+
+  alice-classical:
+    build:
+      context: .
+      dockerfile: cmd/alice-classical/Dockerfile
+    environment:
+      - CENTRIFUGO_URL=ws://centrifugo:8000/connection/websocket
+      - METRICS_PORT=9091
+    ports:
+      - "9091:9091"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+      bob-classical:
+        condition: service_healthy
+    restart: on-failure
+
+  bob-pq:
+    build:
+      context: .
+      dockerfile: cmd/bob-pq/Dockerfile
+    environment:
+      - CENTRIFUGO_URL=ws://centrifugo:8000/connection/websocket
+      - METRICS_PORT=9094
+    ports:
+      - "9094:9094"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+    restart: on-failure
+
+  alice-pq:
+    build:
+      context: .
+      dockerfile: cmd/alice-pq/Dockerfile
+    environment:
+      - CENTRIFUGO_URL=ws://centrifugo:8000/connection/websocket
+      - METRICS_PORT=9093
+    ports:
+      - "9093:9093"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+      bob-pq:
+        condition: service_healthy
+    restart: on-failure
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./prometheus:/etc/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      centrifugo:
+        condition: service_healthy
+    restart: unless-stopped
