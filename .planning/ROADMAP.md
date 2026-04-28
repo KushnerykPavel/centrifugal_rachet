@@ -80,9 +80,9 @@ Plans:
   4. Total active series count stays flat as messages accumulate (no high-cardinality per-message labels)
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
-- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
-- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
+- [x] 04-01-PLAN.md — Classical pair (alice-classical, bob-classical): METRICS_PORT, mutex, all four histograms
+- [x] 04-02-PLAN.md — PQ pair (alice-pq, bob-pq): METRICS_PORT, mutex, all four histograms
+- [x] 04-03-PLAN.md — prometheus/prometheus.yml: four jobs with protocol/role labels via static_configs.labels
 
 ### Phase 5: Docker Compose + Grafana
 **Goal**: `docker compose up` starts all seven services in the correct order and the Grafana dashboard panels populate with live metrics within seconds of startup
@@ -95,9 +95,9 @@ Plans:
   4. Dashboard JSON is committed to the repo and provisioned automatically — no manual Grafana UI import required
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
-- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
-- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
+- [ ] 05-01-PLAN.md — docker-compose.yml with seven services and healthcheck ordering
+- [ ] 05-02-PLAN.md — Dockerfiles for all four client binaries
+- [ ] 05-03-PLAN.md — Grafana dashboard JSON provisioning
 
 ### Phase 6: README + Blog Content
 **Goal**: A reader can clone the repo, follow the README, and immediately understand both what to run and why the numbers matter
@@ -110,9 +110,9 @@ Plans:
   4. Code sample references match `go-doubleratchet v0.0.2` API exactly — no invented method names or signatures
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
-- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
-- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
+- [ ] 06-01-PLAN.md — README.md quick-start, comparison table, ASCII diagrams
+- [ ] 06-02-PLAN.md — Blog content and code pointers
+- [ ] 06-03-PLAN.md — Final verification pass
 
 ## Progress
 
@@ -123,7 +123,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation + Classical Session | 4/4 | Complete | 2026-04-27 |
 | 2. PQ Session | 4/4 | Complete | 2026-04-27 |
-| 3. Centrifugo Integration | 0/? | Not started | - |
-| 4. Prometheus Metrics | 0/? | Not started | - |
-| 5. Docker Compose + Grafana | 0/? | Not started | - |
-| 6. README + Blog Content | 0/? | Not started | - |
+| 3. Centrifugo Integration | 3/3 | Complete | 2026-04-28 |
+| 4. Prometheus Metrics | 0/3 | Not started | - |
+| 5. Docker Compose + Grafana | 0/3 | Not started | - |
+| 6. README + Blog Content | 0/3 | Not started | - |
