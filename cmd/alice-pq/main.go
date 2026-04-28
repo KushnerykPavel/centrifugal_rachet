@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -20,10 +21,14 @@ import (
 )
 
 func main() {
+	port := os.Getenv("METRICS_PORT")
+	if port == "" {
+		port = "9093"
+	}
 	go func() {
 		mux := http.NewServeMux()
 		mux.Handle("/metrics", metrics.Handler())
-		if err := http.ListenAndServe(":9092", mux); err != nil {
+		if err := http.ListenAndServe(":"+port, mux); err != nil {
 			log.Printf("alice-pq: metrics server: %v", err)
 		}
 	}()
@@ -43,6 +48,7 @@ func main() {
 
 	var (
 		sess      *pq.Session
+		mu        sync.Mutex // guards sess, Encrypt, Decrypt
 		recvCount int32
 		sub       *centrifuge.Subscription
 		err       error
@@ -63,7 +69,10 @@ func main() {
 					log.Printf("alice-pq: duplicate prekey_bundle dropped")
 				}
 			case protocol.TypeRatchetMsg:
-				if sess == nil {
+				mu.Lock()
+				sessNil := sess == nil
+				mu.Unlock()
+				if sessNil {
 					log.Printf("alice-pq: session not yet initialized, dropping ratchet_msg")
 					return
 				}
@@ -72,7 +81,12 @@ func main() {
 					log.Printf("alice-pq: unmarshal ratchet_msg: %v", err)
 					return
 				}
+				mu.Lock()
+				t0 := time.Now()
 				plain, err := sess.Decrypt(&msg)
+				metrics.DecryptDurationSeconds.Observe(time.Since(t0).Seconds())
+				metrics.MessageWireBytes.Observe(float64(len(data)))
+				mu.Unlock()
 				if err != nil {
 					log.Printf("alice-pq: Decrypt echo: %v", err)
 					return
@@ -107,11 +121,15 @@ func main() {
 		}
 
 		// Perform PQXDH handshake (Alice side).
+		t0 := time.Now()
 		s, initMsg, err := pq.InitiatorHandshake(&bundle)
+		metrics.HandshakeDurationSeconds.Observe(time.Since(t0).Seconds())
 		if err != nil {
 			log.Fatalf("alice-pq: InitiatorHandshake: %v", err)
 		}
+		mu.Lock()
 		sess = s
+		mu.Unlock()
 		log.Printf("alice-pq: handshake complete")
 
 		// Publish initial message to Bob.
@@ -133,7 +151,11 @@ func main() {
 			if err != nil {
 				log.Fatalf("alice-pq: Marshal ratchetPayload %d: %v", i, err)
 			}
+			mu.Lock()
+			t0 := time.Now()
 			msg, err := sess.Encrypt(payloadJSON)
+			metrics.EncryptDurationSeconds.Observe(time.Since(t0).Seconds())
+			mu.Unlock()
 			if err != nil {
 				log.Fatalf("alice-pq: Encrypt msg %d: %v", i, err)
 			}
@@ -141,6 +163,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("alice-pq: MarshalEnvelope ratchet_msg %d: %v", i, err)
 			}
+			metrics.MessageWireBytes.Observe(float64(len(raw)))
 			if err := cl.Publish(context.Background(), sub, raw); err != nil {
 				log.Fatalf("alice-pq: Publish ratchet_msg %d: %v", i, err)
 			}
