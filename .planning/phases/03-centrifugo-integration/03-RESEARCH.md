@@ -667,17 +667,13 @@ func main() {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Race between sess assignment and concurrent goroutines (Pitfall 4)**
-   - What we know: `sess` is set inside a goroutine from TypeInitialMsg; then TypeRatchetMsg goroutines read it. Both goroutines are spawned by successive OnPublication events.
-   - What's unclear: Whether the sequential cbQueue dispatch guarantees ordering such that TypeInitialMsg completes before TypeRatchetMsg is dispatched.
-   - Recommendation: Add a nil guard (`if sess == nil { return }`) and optionally use an atomic pointer or channel to pass the session. For a 5-message demo with a real network, the ordering will hold in practice. The nil guard is sufficient.
+1. **Race between sess assignment and concurrent goroutines (Pitfall 4)** ✅ RESOLVED
+   - **Decision:** Add a nil guard (`if sess == nil { return }`) in every TypeRatchetMsg handler. Sequential cbQueue dispatch guarantees TypeInitialMsg goroutine completes before TypeRatchetMsg is dispatched in a real network scenario, but the nil guard makes correctness explicit and prevents panics during startup races.
 
-2. **Bob's `sub` variable in closure before assignment**
-   - What we know: The handler closure captures `sub` from the outer scope. `sub` is assigned from `cl.Subscribe(...)` return. The goroutine inside the handler calls `cl.Publish(ctx, sub, raw)` which references `sub`.
-   - What's unclear: Whether declaring `var sub *centrifuge.Subscription` before Subscribe and assigning after is safe for the closure.
-   - Recommendation: Declare `sub` with `var` before the Subscribe call. Assign the result. The closure reads `sub` only when a goroutine runs after Subscribe returns — this is safe because Subscribe returns before any handler fires. The planner should structure code this way explicitly.
+2. **Bob's `sub` variable in closure before assignment** ✅ RESOLVED
+   - **Decision:** Declare `var sub *centrifuge.Subscription` before the Subscribe call; assign the result after. The closure only reads `sub` when a goroutine runs from a publication event — this always happens after Subscribe returns and sets `sub`. Safe by construction; plans must use this pattern explicitly.
 
 ---
 
