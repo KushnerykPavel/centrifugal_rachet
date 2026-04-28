@@ -63,7 +63,11 @@ Plans:
   2. Bob roles publish a typed `prekey_bundle` JSON envelope as their first message; Alice roles receive it within 30 s and complete the handshake
   3. Multiple ratchet messages flow on `ch-classical` and `ch-pq` independently — neither channel carries messages from the other protocol
   4. All `OnPublication` callbacks dispatch work to `go func()` — no blocking call inside the handler loop
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
+- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
+- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
 
 ### Phase 4: Prometheus Metrics
 **Goal**: All four binaries emit wire-size, handshake, and encrypt/decrypt metrics; Prometheus scrape config attaches protocol and role labels without the binaries emitting them
@@ -74,7 +78,11 @@ Plans:
   2. `ratchet_handshake_duration_seconds`, `ratchet_encrypt_duration_seconds`, and `ratchet_decrypt_duration_seconds` histograms are present on all four `/metrics` endpoints
   3. `prometheus.yml` attaches `protocol=classical|pq` and `role=alice|bob` via `static_configs.labels`; the Go binaries emit no protocol or role label
   4. Total active series count stays flat as messages accumulate (no high-cardinality per-message labels)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
+- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
+- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
 
 ### Phase 5: Docker Compose + Grafana
 **Goal**: `docker compose up` starts all seven services in the correct order and the Grafana dashboard panels populate with live metrics within seconds of startup
@@ -85,7 +93,11 @@ Plans:
   2. Service startup order is enforced via `depends_on` with `condition: service_healthy`; Alice roles never start before their paired Bob is healthy
   3. Grafana dashboard shows two Stat panels (handshake initial message size classical vs PQ), one wire-size Time Series (both protocols overlaid), and two latency panels (encrypt and decrypt)
   4. Dashboard JSON is committed to the repo and provisioned automatically — no manual Grafana UI import required
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
+- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
+- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
 
 ### Phase 6: README + Blog Content
 **Goal**: A reader can clone the repo, follow the README, and immediately understand both what to run and why the numbers matter
@@ -96,7 +108,11 @@ Plans:
   2. Comparison table in README contains exact byte numbers (120 vs 1208 bytes handshake, 40 vs 1128 bytes ratchet step) sourced from a running instance
   3. ASCII sequence diagrams accurately represent X3DH and PQXDH key exchange steps
   4. Code sample references match `go-doubleratchet v0.0.2` API exactly — no invented method names or signatures
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
+- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
+- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
 
 ## Progress
 
