@@ -50,7 +50,8 @@
 **: All four binaries observe `ratchet_handshake_duration_seconds` histogram (wall time of full key exchange + session init)
 - [x] **OBS-03
 **: All four binaries observe `ratchet_encrypt_duration_seconds` and `ratchet_decrypt_duration_seconds` histograms
-- [ ] **OBS-04**: `prometheus.yml` attaches `protocol=classical|pq` and `role=alice|bob` labels via `static_configs.labels` at scrape level — binaries emit no protocol/role labels themselves
+- [x] **OBS-04
+**: `prometheus.yml` attaches `protocol=classical|pq` and `role=alice|bob` labels via `static_configs.labels` at scrape level — binaries emit no protocol/role labels themselves
 - [ ] **OBS-05**: Grafana dashboard JSON provisioned at startup includes: two Stat panels showing handshake initial message size (classical vs PQ), one Time Series panel of wire size over time (both protocols overlaid), two latency panels (encrypt and decrypt)
 
 ### Deployment
