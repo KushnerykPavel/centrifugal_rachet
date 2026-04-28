@@ -95,9 +95,9 @@ Plans:
   4. Dashboard JSON is committed to the repo and provisioned automatically — no manual Grafana UI import required
 **Plans**: 3 plans
 Plans:
-- [ ] 05-01-PLAN.md — docker-compose.yml with seven services and healthcheck ordering
-- [ ] 05-02-PLAN.md — Dockerfiles for all four client binaries
-- [ ] 05-03-PLAN.md — Grafana dashboard JSON provisioning
+- [x] 05-01-PLAN.md — Dockerfiles for all four client binaries (golang:1.25-alpine, CGO_ENABLED=0, wget HEALTHCHECK)
+- [ ] 05-02-PLAN.md — docker-compose.yml: seven services with condition:service_healthy startup ordering
+- [ ] 05-03-PLAN.md — Grafana provisioning YAML files + ratchet.json dashboard (5 panels)
 
 ### Phase 6: README + Blog Content
 **Goal**: A reader can clone the repo, follow the README, and immediately understand both what to run and why the numbers matter
@@ -124,6 +124,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation + Classical Session | 4/4 | Complete | 2026-04-27 |
 | 2. PQ Session | 4/4 | Complete | 2026-04-27 |
 | 3. Centrifugo Integration | 3/3 | Complete | 2026-04-28 |
-| 4. Prometheus Metrics | 0/3 | Not started | - |
-| 5. Docker Compose + Grafana | 0/3 | Not started | - |
+| 4. Prometheus Metrics | 3/3 | Complete | 2026-04-28 |
+| 5. Docker Compose + Grafana | 1/3 | In progress | - |
 | 6. README + Blog Content | 0/3 | Not started | - |
