@@ -65,9 +65,9 @@ Plans:
   4. All `OnPublication` callbacks dispatch work to `go func()` — no blocking call inside the handler loop
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
-- [ ] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
-- [ ] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
+- [x] 03-01-PLAN.md — internal/protocol envelope + centrifugo/config.json scaffold
+- [x] 03-02-PLAN.md — Classical pair binaries (bob-classical, alice-classical)
+- [x] 03-03-PLAN.md — PQ pair binaries (bob-pq, alice-pq)
 
 ### Phase 4: Prometheus Metrics
 **Goal**: All four binaries emit wire-size, handshake, and encrypt/decrypt metrics; Prometheus scrape config attaches protocol and role labels without the binaries emitting them
