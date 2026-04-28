@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: alice-classical
+    static_configs:
+      - targets: ["alice-classical:9091"]
+        labels:
+          protocol: classical
+          role: alice
+
+  - job_name: bob-classical
+    static_configs:
+      - targets: ["bob-classical:9092"]
+        labels:
+          protocol: classical
+          role: bob
+
+  - job_name: alice-pq
+    static_configs:
+      - targets: ["alice-pq:9093"]
+        labels:
+          protocol: pq
+          role: alice
+
+  - job_name: bob-pq
+    static_configs:
+      - targets: ["bob-pq:9094"]
+        labels:
+          protocol: pq
+          role: bob
