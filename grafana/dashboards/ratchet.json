@@ -1,0 +1,252 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "description": "Classical vs Post-Quantum Ratchet Protocol comparison",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "-- Default --" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_handshake_duration_seconds_sum{job=~\"alice-classical|bob-classical\"}[1m]) / rate(ratchet_handshake_duration_seconds_count{job=~\"alice-classical|bob-classical\"}[1m])",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Classical Handshake",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "-- Default --" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_handshake_duration_seconds_sum{job=~\"alice-pq|bob-pq\"}[1m]) / rate(ratchet_handshake_duration_seconds_count{job=~\"alice-pq|bob-pq\"}[1m])",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "title": "PQ Handshake",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "-- Default --" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "id": 3,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=\"alice-classical\"}[30s]) / rate(ratchet_message_wire_bytes_count{job=\"alice-classical\"}[30s])",
+          "legendFormat": "alice-classical",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=\"bob-classical\"}[30s]) / rate(ratchet_message_wire_bytes_count{job=\"bob-classical\"}[30s])",
+          "legendFormat": "bob-classical",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=\"alice-pq\"}[30s]) / rate(ratchet_message_wire_bytes_count{job=\"alice-pq\"}[30s])",
+          "legendFormat": "alice-pq",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_message_wire_bytes_sum{job=\"bob-pq\"}[30s]) / rate(ratchet_message_wire_bytes_count{job=\"bob-pq\"}[30s])",
+          "legendFormat": "bob-pq",
+          "refId": "D"
+        }
+      ],
+      "title": "Message Wire Size (bytes)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "-- Default --" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 4,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_encrypt_duration_seconds_sum{job=\"alice-classical\"}[30s]) / rate(ratchet_encrypt_duration_seconds_count{job=\"alice-classical\"}[30s])",
+          "legendFormat": "alice-classical",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_encrypt_duration_seconds_sum{job=\"bob-classical\"}[30s]) / rate(ratchet_encrypt_duration_seconds_count{job=\"bob-classical\"}[30s])",
+          "legendFormat": "bob-classical",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_encrypt_duration_seconds_sum{job=\"alice-pq\"}[30s]) / rate(ratchet_encrypt_duration_seconds_count{job=\"alice-pq\"}[30s])",
+          "legendFormat": "alice-pq",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_encrypt_duration_seconds_sum{job=\"bob-pq\"}[30s]) / rate(ratchet_encrypt_duration_seconds_count{job=\"bob-pq\"}[30s])",
+          "legendFormat": "bob-pq",
+          "refId": "D"
+        }
+      ],
+      "title": "Encrypt Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "-- Default --" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 5,
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_decrypt_duration_seconds_sum{job=\"alice-classical\"}[30s]) / rate(ratchet_decrypt_duration_seconds_count{job=\"alice-classical\"}[30s])",
+          "legendFormat": "alice-classical",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_decrypt_duration_seconds_sum{job=\"bob-classical\"}[30s]) / rate(ratchet_decrypt_duration_seconds_count{job=\"bob-classical\"}[30s])",
+          "legendFormat": "bob-classical",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_decrypt_duration_seconds_sum{job=\"alice-pq\"}[30s]) / rate(ratchet_decrypt_duration_seconds_count{job=\"alice-pq\"}[30s])",
+          "legendFormat": "alice-pq",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "-- Default --" },
+          "expr": "rate(ratchet_decrypt_duration_seconds_sum{job=\"bob-pq\"}[30s]) / rate(ratchet_decrypt_duration_seconds_count{job=\"bob-pq\"}[30s])",
+          "legendFormat": "bob-pq",
+          "refId": "D"
+        }
+      ],
+      "title": "Decrypt Latency",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "tags": ["ratchet", "crypto", "prometheus"],
+  "templating": { "list": [] },
+  "time": { "from": "now-2m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Centrifugal Ratchet \u2014 Classical vs PQ",
+  "uid": "centrifugal-ratchet",
+  "version": 1
+}
