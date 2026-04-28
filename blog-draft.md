@@ -199,7 +199,7 @@ After `docker compose up`, visit `http://localhost:3000`. No login required — 
 | Handshake initial message (bytes) | ~120 | ~1208 |
 | Per-message ratchet step (bytes) | ~40 | ~1128 |
 
-*Numbers measured from a live `docker compose up` run via Grafana `ratchet_message_wire_bytes` histogram.*
+*Numbers are planning-phase estimates (REQUIREMENTS.md); verify by running `docker compose up` and inspecting the Grafana `ratchet_message_wire_bytes` histogram at http://localhost:3000.*
 
 What drives the PQ size:
 

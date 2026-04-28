@@ -48,14 +48,14 @@ Open **http://localhost:3000** — no login required (anonymous Viewer). The Gra
 
 | Metric | Classical (X3DH + DR) | Post-Quantum (PQXDH + TR) |
 |--------|----------------------|---------------------------|
-| Handshake initial message | ~120 bytes* | ~1208 bytes* |
-| Ratchet step message | ~40 bytes* | ~1128 bytes* |
+| Handshake initial message | ~120 bytes† | ~1208 bytes† |
+| Ratchet step message | ~40 bytes† | ~1128 bytes† |
 | ML-KEM-768 encap key | — | 1184 bytes |
 | ML-KEM-768 ciphertext | — | 1088 bytes |
 
-\* measured from a live `docker compose up` run; verify with the Grafana wire-size panel at http://localhost:3000
+† planning-phase estimates (REQUIREMENTS.md); not yet confirmed from a live run — TODO: run `docker compose up` and verify via Grafana `ratchet_message_wire_bytes` histogram at http://localhost:3000
 
-The ML-KEM-768 key sizes (1184 / 1088 bytes) are constants in the Go standard library (`crypto/mlkem`); all other numbers come from Prometheus observations.
+The ML-KEM-768 key sizes (1184 / 1088 bytes) are confirmed by unit-test assertions in `internal/pq/pq_test.go` (TestMLKEMProviderKEMProtocol and TestMLKEMProviderSnapshot). The full-message wire sizes (~120/~1208/~40/~1128) require a live stack run to confirm.
 
 ---
 
