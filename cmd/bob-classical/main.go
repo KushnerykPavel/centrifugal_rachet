@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"sync/atomic"
+	"time"
 
 	centrifuge "github.com/centrifugal/centrifuge-go"
 
@@ -17,10 +19,14 @@ import (
 )
 
 func main() {
+	port := os.Getenv("METRICS_PORT")
+	if port == "" {
+		port = "9092"
+	}
 	go func() {
 		mux := http.NewServeMux()
 		mux.Handle("/metrics", metrics.Handler())
-		if err := http.ListenAndServe(":9091", mux); err != nil {
+		if err := http.ListenAndServe(":"+port, mux); err != nil {
 			log.Printf("bob-classical: metrics server: %v", err)
 		}
 	}()
@@ -43,6 +49,7 @@ func main() {
 
 	var (
 		sess      *classical.Session
+		mu        sync.Mutex // guards sess, Encrypt, Decrypt
 		echoCount int32
 		sub       *centrifuge.Subscription
 	)
@@ -56,21 +63,28 @@ func main() {
 			}
 			switch env.Type {
 			case protocol.TypeInitialMsg:
+				t0 := time.Now()
 				var initMsg classical.InitialMessage
 				if err := json.Unmarshal(env.Payload, &initMsg); err != nil {
 					log.Printf("bob-classical: unmarshal initial_msg: %v", err)
 					return
 				}
 				s, err := classical.ResponderHandshake(priv, initMsg)
+				metrics.HandshakeDurationSeconds.Observe(time.Since(t0).Seconds())
 				if err != nil {
 					log.Printf("bob-classical: ResponderHandshake: %v", err)
 					return
 				}
+				mu.Lock()
 				sess = s
+				mu.Unlock()
 				log.Printf("bob-classical: handshake complete")
 
 			case protocol.TypeRatchetMsg:
-				if sess == nil {
+				mu.Lock()
+				sessNil := sess == nil
+				mu.Unlock()
+				if sessNil {
 					log.Printf("bob-classical: session not yet initialized, dropping ratchet_msg")
 					return
 				}
@@ -79,7 +93,12 @@ func main() {
 					log.Printf("bob-classical: unmarshal ratchet_msg: %v", err)
 					return
 				}
+				mu.Lock()
+				t0 := time.Now()
 				plain, err := sess.Decrypt(&msg)
+				metrics.DecryptDurationSeconds.Observe(time.Since(t0).Seconds())
+				metrics.MessageWireBytes.Observe(float64(len(data)))
+				mu.Unlock()
 				if err != nil {
 					log.Printf("bob-classical: Decrypt: %v", err)
 					return
@@ -98,7 +117,11 @@ func main() {
 					log.Printf("bob-classical: marshal echo payload: %v", err)
 					return
 				}
+				mu.Lock()
+				t0 = time.Now()
 				echoMsg, err := sess.Encrypt(echoJSON)
+				metrics.EncryptDurationSeconds.Observe(time.Since(t0).Seconds())
+				mu.Unlock()
 				if err != nil {
 					log.Printf("bob-classical: Encrypt echo: %v", err)
 					return
@@ -108,6 +131,7 @@ func main() {
 					log.Printf("bob-classical: MarshalEnvelope echo: %v", err)
 					return
 				}
+				metrics.MessageWireBytes.Observe(float64(len(raw)))
 				if err := cl.Publish(context.Background(), sub, raw); err != nil {
 					log.Printf("bob-classical: Publish echo: %v", err)
 					return
