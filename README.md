@@ -144,7 +144,4 @@ No inline snippets — links only; the code is the authoritative source.
 - Scrape config (protocol/role labels): [prometheus/prometheus.yml](prometheus/prometheus.yml)
 - Service topology: [docker-compose.yml](docker-compose.yml)
 
----
-
-📝 Blog post draft: [blog-draft.md](blog-draft.md)
 
