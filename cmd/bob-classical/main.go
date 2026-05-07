@@ -10,13 +10,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	centrifuge "github.com/centrifugal/centrifuge-go"
+	"github.com/centrifugal/centrifuge-go"
 
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/classical"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/metrics"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/protocol"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/transport"
 )
+
+const msgCount = 10000
+const timeout = 10 * time.Minute
 
 func main() {
 	port := os.Getenv("METRICS_PORT")
@@ -54,11 +57,16 @@ func main() {
 		sub       *centrifuge.Subscription
 	)
 
+	const selfID = "bob-classical"
+
 	sub, err = cl.Subscribe(protocol.ChannelClassical, func(data []byte) {
 		go func() {
 			var env protocol.Envelope
 			if err := json.Unmarshal(data, &env); err != nil {
 				log.Printf("bob-classical: unmarshal envelope: %v", err)
+				return
+			}
+			if env.From == selfID {
 				return
 			}
 			switch env.Type {
@@ -93,6 +101,7 @@ func main() {
 					log.Printf("bob-classical: unmarshal ratchet_msg: %v", err)
 					return
 				}
+				log.Printf("bob-classical: DEBUG: recv msg Header.N=%d, RatchetPublicKey=%x", msg.DR.Header.N, msg.DR.Header.RatchetPublicKey[:4])
 				mu.Lock()
 				t0 := time.Now()
 				plain, err := sess.Decrypt(&msg)
@@ -126,7 +135,7 @@ func main() {
 					log.Printf("bob-classical: Encrypt echo: %v", err)
 					return
 				}
-				raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, echoMsg)
+				raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, selfID, echoMsg)
 				if err != nil {
 					log.Printf("bob-classical: MarshalEnvelope echo: %v", err)
 					return
@@ -137,8 +146,8 @@ func main() {
 					return
 				}
 				n := atomic.AddInt32(&echoCount, 1)
-				if n == 5 {
-					log.Printf("bob-classical: sent 5 echoes, exiting")
+			if n == msgCount {
+				log.Printf("bob-classical: sent %d echoes, exiting", msgCount)
 					os.Exit(0)
 				}
 			}
@@ -148,11 +157,13 @@ func main() {
 		log.Fatalf("bob-classical: Subscribe: %v", err)
 	}
 
-	raw, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, bundle)
+	raw, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, selfID, bundle)
 	if err != nil {
 		log.Fatalf("bob-classical: MarshalEnvelope prekey_bundle: %v", err)
 	}
-	if err := cl.Publish(context.Background(), sub, raw); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	if err := cl.Publish(ctx, sub, raw); err != nil {
 		log.Fatalf("bob-classical: Publish prekey_bundle: %v", err)
 	}
 	log.Printf("bob-classical: published prekey bundle on %s, waiting for Alice", protocol.ChannelClassical)

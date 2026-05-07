@@ -3,9 +3,11 @@ package protocol
 import "encoding/json"
 
 // Envelope is the JSON wrapper for all Centrifugo channel messages.
-// Type field drives dispatch; Payload carries the inner struct as raw JSON.
+// Type field drives dispatch; From identifies the sender so subscribers can
+// filter out their own publications; Payload carries the inner struct as raw JSON.
 type Envelope struct {
 	Type    string          `json:"type"`
+	From    string          `json:"from"`
 	Payload json.RawMessage `json:"payload"`
 }
 
@@ -32,11 +34,12 @@ type RatchetPayload struct {
 }
 
 // MarshalEnvelope marshals inner to JSON and wraps it in an Envelope.
+// from identifies the sending party so subscribers can filter their own publications.
 // Returns the outer Envelope as JSON bytes ready to publish.
-func MarshalEnvelope(typ string, inner any) ([]byte, error) {
+func MarshalEnvelope(typ, from string, inner any) ([]byte, error) {
 	payload, err := json.Marshal(inner)
 	if err != nil {
 		return nil, err
 	}
-	return json.Marshal(Envelope{Type: typ, Payload: json.RawMessage(payload)})
+	return json.Marshal(Envelope{Type: typ, From: from, Payload: json.RawMessage(payload)})
 }

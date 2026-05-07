@@ -20,6 +20,12 @@ import (
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/transport"
 )
 
+const (
+	msgCount  = 10000
+	timeout   = 10 * time.Minute
+	sendDelay = 20 * time.Millisecond
+)
+
 func main() {
 	port := os.Getenv("METRICS_PORT")
 	if port == "" {
@@ -54,11 +60,16 @@ func main() {
 		err       error
 	)
 
+	const selfID = "alice-pq"
+
 	sub, err = cl.Subscribe(protocol.ChannelPQ, func(data []byte) {
 		go func() {
 			var env protocol.Envelope
 			if err := json.Unmarshal(data, &env); err != nil {
 				log.Printf("alice-pq: unmarshal envelope: %v", err)
+				return
+			}
+			if env.From == selfID {
 				return
 			}
 			switch env.Type {
@@ -99,8 +110,8 @@ func main() {
 				}
 				log.Printf("alice-pq: recv echo: seq=%d text=%s", rp.Seq, rp.Text)
 				n := atomic.AddInt32(&recvCount, 1)
-				if n == 5 {
-					log.Printf("alice-pq: received 5 echoes, exiting")
+			if n == msgCount {
+				log.Printf("alice-pq: received %d echoes, exiting", msgCount)
 					os.Exit(0)
 				}
 			}
@@ -133,7 +144,7 @@ func main() {
 		log.Printf("alice-pq: handshake complete")
 
 		// Publish initial message to Bob.
-		initRaw, err := protocol.MarshalEnvelope(protocol.TypeInitialMsg, initMsg)
+		initRaw, err := protocol.MarshalEnvelope(protocol.TypeInitialMsg, selfID, initMsg)
 		if err != nil {
 			log.Fatalf("alice-pq: MarshalEnvelope initial_msg: %v", err)
 		}
@@ -141,8 +152,8 @@ func main() {
 			log.Fatalf("alice-pq: Publish initial_msg: %v", err)
 		}
 
-		// Send 5 ratchet messages with RatchetPayload JSON (D-04, D-05).
-		for i := 1; i <= 5; i++ {
+		// Send ratchet messages with RatchetPayload JSON (D-04, D-05).
+		for i := 1; i <= msgCount; i++ {
 			rp := protocol.RatchetPayload{
 				Seq:  i,
 				Text: fmt.Sprintf("hello from alice-pq %d", i),
@@ -159,7 +170,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("alice-pq: Encrypt msg %d: %v", i, err)
 			}
-			raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, msg)
+			raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, selfID, msg)
 			if err != nil {
 				log.Fatalf("alice-pq: MarshalEnvelope ratchet_msg %d: %v", i, err)
 			}
@@ -168,9 +179,10 @@ func main() {
 				log.Fatalf("alice-pq: Publish ratchet_msg %d: %v", i, err)
 			}
 			log.Printf("alice-pq: sent ratchet_msg seq=%d", i)
+			time.Sleep(sendDelay)
 		}
 
-	case <-time.After(30 * time.Second):
+	case <-time.After(timeout):
 		log.Fatalf("alice-pq: timed out waiting for Bob's prekey bundle on %s", protocol.ChannelPQ)
 	}
 

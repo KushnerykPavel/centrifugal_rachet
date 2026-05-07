@@ -1,0 +1,18 @@
+# Binaries
+alice-classical
+alice-pq
+bob-classical
+bob-pq
+
+# Go
+vendor/
+*.out
+coverage.html
+
+# Tools / IDE
+.planning/
+.opencode/
+.idea/
+
+# OS
+.DS_Store

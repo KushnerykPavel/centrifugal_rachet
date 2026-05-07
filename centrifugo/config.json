@@ -1,9 +1,22 @@
 {
   "client": {
-    "insecure": true
+    "insecure": true,
+    "allow_anonymous_connect_without_token": true
   },
-  "health": true,
-  "address": "0.0.0.0",
-  "port": 8000,
-  "log_level": "info"
+  "health": {
+    "enabled": true
+  },
+  "http_api": {
+    "key": "test-api-key"
+  },
+  "channel": {
+    "without_namespace": {
+      "allow_subscribe_for_anonymous": true,
+      "allow_subscribe_for_client": true,
+      "allow_publish_for_subscriber": true,
+      "allow_publish_for_anonymous": true,
+      "history_size": 10,
+      "history_ttl": "300s"
+    }
+  }
 }

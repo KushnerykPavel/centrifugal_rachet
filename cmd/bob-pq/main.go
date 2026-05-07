@@ -18,6 +18,11 @@ import (
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/transport"
 )
 
+const (
+	msgCount = 10000
+	timeout  = 10 * time.Minute
+)
+
 func main() {
 	port := os.Getenv("METRICS_PORT")
 	if port == "" {
@@ -54,11 +59,16 @@ func main() {
 		sub       *centrifuge.Subscription
 	)
 
+	const selfID = "bob-pq"
+
 	sub, err = cl.Subscribe(protocol.ChannelPQ, func(data []byte) {
 		go func() {
 			var env protocol.Envelope
 			if err := json.Unmarshal(data, &env); err != nil {
 				log.Printf("bob-pq: unmarshal envelope: %v", err)
+				return
+			}
+			if env.From == selfID {
 				return
 			}
 			switch env.Type {
@@ -128,7 +138,7 @@ func main() {
 					log.Printf("bob-pq: Encrypt echo: %v", err)
 					return
 				}
-				raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, echoMsg)
+				raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, selfID, echoMsg)
 				if err != nil {
 					log.Printf("bob-pq: MarshalEnvelope echo: %v", err)
 					return
@@ -139,8 +149,8 @@ func main() {
 					return
 				}
 				n := atomic.AddInt32(&echoCount, 1)
-				if n == 5 {
-					log.Printf("bob-pq: sent 5 echoes, exiting")
+			if n == msgCount {
+				log.Printf("bob-pq: sent %d echoes, exiting", msgCount)
 					os.Exit(0)
 				}
 			}
@@ -150,7 +160,7 @@ func main() {
 		log.Fatalf("bob-pq: Subscribe: %v", err)
 	}
 
-	raw, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, bundle)
+	raw, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, selfID, bundle)
 	if err != nil {
 		log.Fatalf("bob-pq: MarshalEnvelope prekey_bundle: %v", err)
 	}

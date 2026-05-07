@@ -3,7 +3,7 @@ module github.com/KushnerykPavel/centrifugal-ratchet
 go 1.25.0
 
 require (
-	github.com/KushnerykPavel/go-doubleratchet v0.0.2
+	github.com/KushnerykPavel/go-doubleratchet v0.0.3
 	github.com/centrifugal/centrifuge-go v0.10.12
 	github.com/prometheus/client_golang v1.23.2
 	github.com/stretchr/testify v1.11.1

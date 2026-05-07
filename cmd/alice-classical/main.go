@@ -11,13 +11,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	centrifuge "github.com/centrifugal/centrifuge-go"
+	"github.com/centrifugal/centrifuge-go"
 
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/classical"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/metrics"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/protocol"
 	"github.com/KushnerykPavel/centrifugal-ratchet/internal/transport"
 )
+
+const msgCount = 10000
+const timeout = 10 * time.Minute
+const sendDelay = 20 * time.Millisecond
 
 func main() {
 	port := os.Getenv("METRICS_PORT")
@@ -53,11 +57,16 @@ func main() {
 		err       error
 	)
 
+	const selfID = "alice-classical"
+
 	sub, err = cl.Subscribe(protocol.ChannelClassical, func(data []byte) {
 		go func() {
 			var env protocol.Envelope
 			if err := json.Unmarshal(data, &env); err != nil {
 				log.Printf("alice-classical: unmarshal envelope: %v", err)
+				return
+			}
+			if env.From == selfID {
 				return
 			}
 			switch env.Type {
@@ -80,6 +89,7 @@ func main() {
 					log.Printf("alice-classical: unmarshal ratchet_msg: %v", err)
 					return
 				}
+				log.Printf("alice-classical: DEBUG: recv echo Header.N=%d, RatchetPublicKey=%x", msg.DR.Header.N, msg.DR.Header.RatchetPublicKey[:4])
 				mu.Lock()
 				t0 := time.Now()
 				plain, err := sess.Decrypt(&msg)
@@ -97,8 +107,8 @@ func main() {
 				}
 				log.Printf("alice-classical: recv echo: seq=%d text=%s", rp.Seq, rp.Text)
 				n := atomic.AddInt32(&recvCount, 1)
-				if n == 5 {
-					log.Printf("alice-classical: received 5 echoes, exiting")
+			if n == msgCount {
+				log.Printf("alice-classical: received %d echoes, exiting", msgCount)
 					os.Exit(0)
 				}
 			}
@@ -126,15 +136,17 @@ func main() {
 		mu.Unlock()
 		log.Printf("alice-classical: handshake complete")
 
-		initRaw, err := protocol.MarshalEnvelope(protocol.TypeInitialMsg, initMsg)
+		initRaw, err := protocol.MarshalEnvelope(protocol.TypeInitialMsg, selfID, initMsg)
 		if err != nil {
 			log.Fatalf("alice-classical: MarshalEnvelope initial_msg: %v", err)
 		}
-		if err := cl.Publish(context.Background(), sub, initRaw); err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+		if err := cl.Publish(ctx, sub, initRaw); err != nil {
 			log.Fatalf("alice-classical: Publish initial_msg: %v", err)
 		}
 
-		for i := 1; i <= 5; i++ {
+		for i := 1; i <= msgCount; i++ {
 			rp := protocol.RatchetPayload{
 				Seq:  i,
 				Text: fmt.Sprintf("hello from alice-classical %d", i),
@@ -145,24 +157,30 @@ func main() {
 			}
 			mu.Lock()
 			t0 := time.Now()
+			log.Printf("alice-classical: DEBUG: about to encrypt seq=%d", i)
 			msg, err := sess.Encrypt(payloadJSON)
+			log.Printf("alice-classical: DEBUG: encrypted, Header.N=%d, RatchetPublicKey=%x", msg.DR.Header.N, msg.DR.Header.RatchetPublicKey[:4])
 			metrics.EncryptDurationSeconds.Observe(time.Since(t0).Seconds())
 			mu.Unlock()
 			if err != nil {
 				log.Fatalf("alice-classical: Encrypt msg %d: %v", i, err)
 			}
-			raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, msg)
+			raw, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, selfID, msg)
 			if err != nil {
 				log.Fatalf("alice-classical: MarshalEnvelope ratchet_msg %d: %v", i, err)
 			}
 			metrics.MessageWireBytes.Observe(float64(len(raw)))
-			if err := cl.Publish(context.Background(), sub, raw); err != nil {
+			publishCtx, publishCancel := context.WithTimeout(context.Background(), timeout)
+			if err := cl.Publish(publishCtx, sub, raw); err != nil {
+				publishCancel()
 				log.Fatalf("alice-classical: Publish ratchet_msg %d: %v", i, err)
 			}
+			publishCancel()
 			log.Printf("alice-classical: sent ratchet_msg seq=%d", i)
+			time.Sleep(sendDelay)
 		}
 
-	case <-time.After(30 * time.Second):
+	case <-time.After(timeout):
 		log.Fatalf("alice-classical: timed out waiting for Bob's prekey bundle on %s", protocol.ChannelClassical)
 	}
 

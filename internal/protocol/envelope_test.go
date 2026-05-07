@@ -11,7 +11,7 @@ import (
 // that round-trips through json.Unmarshal with the correct Type and Payload content.
 func TestMarshalEnvelope_RoundTrip(t *testing.T) {
 	inner := map[string]string{"k": "v"}
-	b, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, inner)
+	b, err := protocol.MarshalEnvelope(protocol.TypePrekeyBundle, "test", inner)
 	if err != nil {
 		t.Fatalf("MarshalEnvelope returned error: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestMarshalEnvelope_AllTypes(t *testing.T) {
 		protocol.TypeRatchetMsg,
 	}
 	for _, typ := range types {
-		b, err := protocol.MarshalEnvelope(typ, map[string]int{"n": 1})
+		b, err := protocol.MarshalEnvelope(typ, "test", map[string]int{"n": 1})
 		if err != nil {
 			t.Fatalf("MarshalEnvelope(%q) returned error: %v", typ, err)
 		}
@@ -70,7 +70,7 @@ func TestChannelConstants(t *testing.T) {
 // TestMarshalEnvelope_Error verifies that passing an unmarshalable type (channel) returns an error.
 func TestMarshalEnvelope_Error(t *testing.T) {
 	ch := make(chan int)
-	_, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, ch)
+	_, err := protocol.MarshalEnvelope(protocol.TypeRatchetMsg, "test", ch)
 	if err == nil {
 		t.Error("expected error when marshaling channel type, got nil")
 	}

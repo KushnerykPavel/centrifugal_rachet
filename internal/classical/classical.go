@@ -89,7 +89,6 @@ func InitiatorHandshake(bundle *PrekeyBundle) (*Session, InitialMessage, error) 
 		return nil, InitialMessage{}, fmt.Errorf("classical: SendHandshake: %w", err)
 	}
 
-	// InitAlice: Alice is the initiator; she knows Bob's ratchet public key (= SPK public key).
 	drSess, err := doubleratchet.InitAlice(aliceResult.SharedSecret[:], bundle.SignedPreKey, nil)
 	if err != nil {
 		return nil, InitialMessage{}, fmt.Errorf("classical: InitAlice: %w", err)
@@ -111,7 +110,6 @@ func ResponderHandshake(priv *ResponderKeys, initMsg InitialMessage) (*Session, 
 		return nil, fmt.Errorf("classical: ReceiveHandshake: %w", err)
 	}
 
-	// InitBob: Bob is the responder; his SPK serves as his initial DR ratchet key pair.
 	bobRatchetKP := doubleratchet.KeyPair{
 		PrivateKey: priv.spk.PrivateKey,
 		PublicKey:  priv.spk.PublicKey,

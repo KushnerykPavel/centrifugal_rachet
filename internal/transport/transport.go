@@ -25,11 +25,14 @@ func NewClient(addr string) *Client {
 // Registers no-op handlers for OnConnected/OnDisconnected/OnError so
 // centrifuge-go does not log "handler not set" warnings.
 func (cl *Client) Connect() error {
-	cl.c = centrifuge.NewJsonClient(cl.addr, centrifuge.Config{})
-	cl.c.OnConnected(func(_ centrifuge.ConnectedEvent) {})
+	cl.c = centrifuge.NewJsonClient(cl.addr, centrifuge.Config{
+		Token: "",
+	})
+	cl.c.OnConnected(func(_ centrifuge.ConnectedEvent) {
+		fmt.Println("transport: connected to centrifugo")
+	})
 	cl.c.OnDisconnected(func(_ centrifuge.DisconnectedEvent) {})
 	cl.c.OnError(func(e centrifuge.ErrorEvent) {
-		// non-fatal: log to stderr for visibility during blog demo
 		fmt.Printf("transport: centrifuge error: %v\n", e.Error)
 	})
 	return cl.c.Connect()
@@ -42,7 +45,7 @@ func (cl *Client) Connect() error {
 // centrifuge-go v0.10.12 runs OnPublication on the connection read goroutine;
 // calling Publish or Disconnect inside the handler without a goroutine deadlocks.
 func (cl *Client) Subscribe(channel string, handler func(data []byte)) (*centrifuge.Subscription, error) {
-	sub, err := cl.c.NewSubscription(channel, centrifuge.SubscriptionConfig{})
+	sub, err := cl.c.NewSubscription(channel, centrifuge.SubscriptionConfig{Recoverable: true})
 	if err != nil {
 		return nil, fmt.Errorf("transport: NewSubscription %q: %w", channel, err)
 	}
